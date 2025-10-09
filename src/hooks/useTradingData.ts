@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Stock, Portfolio, Transaction, Holding } from '@/types/trading';
-import { INITIAL_STOCKS, INITIAL_BALANCE, simulatePriceChange } from '@/lib/stocks';
+import { INITIAL_STOCKS, INITIAL_BALANCE } from '@/lib/stocks';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'trading_simulator_data';
 
@@ -46,27 +47,55 @@ export const useTradingData = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolio));
   }, [portfolio]);
 
-  // Simulate price updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStocks(prevStocks =>
-        prevStocks.map(stock => {
-          const newPrice = simulatePriceChange(stock.currentPrice);
-          const change = newPrice - stock.previousPrice;
-          const changePercent = (change / stock.previousPrice) * 100;
-          
-          return {
-            ...stock,
-            currentPrice: parseFloat(newPrice.toFixed(2)),
-            change: parseFloat(change.toFixed(2)),
-            changePercent: parseFloat(changePercent.toFixed(2)),
-          };
-        })
-      );
-    }, 3000); // Update every 3 seconds
+  // Fetch real-time prices from API
+  const fetchStockPrices = useCallback(async () => {
+    try {
+      const symbols = stocks.map(s => s.symbol);
+      const { data, error } = await supabase.functions.invoke('fetch-stock-prices', {
+        body: { symbols },
+      });
 
+      if (error) throw error;
+
+      if (data?.prices) {
+        setStocks(prevStocks =>
+          prevStocks.map(stock => {
+            const priceData = data.prices.find((p: any) => p.symbol === stock.symbol);
+            if (!priceData || priceData.error) return stock;
+
+            const change = priceData.change || 0;
+            const changePercent = priceData.changePercent || 0;
+
+            return {
+              ...stock,
+              currentPrice: parseFloat(priceData.currentPrice.toFixed(2)),
+              previousPrice: priceData.previousClose || stock.previousPrice,
+              change: parseFloat(change.toFixed(2)),
+              changePercent: parseFloat(changePercent.toFixed(2)),
+              volume: priceData.volume || stock.volume,
+            };
+          })
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching stock prices:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch stock prices. Using cached data.',
+        variant: 'destructive',
+      });
+    }
+  }, [stocks]);
+
+  // Fetch prices on mount and every 60 seconds
+  useEffect(() => {
+    if (stocks.length > 0 && stocks[0].currentPrice === 0) {
+      fetchStockPrices();
+    }
+
+    const interval = setInterval(fetchStockPrices, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStockPrices]);
 
   // Recalculate portfolio value when stock prices change
   useEffect(() => {

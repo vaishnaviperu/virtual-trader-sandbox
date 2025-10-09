@@ -1,17 +1,17 @@
 import { Stock } from '@/types/trading';
 
-// Initial stock data
+// Initial stock data - Using US stock symbols for Finnhub API
 export const INITIAL_STOCKS: Omit<Stock, 'change' | 'changePercent' | 'previousPrice'>[] = [
-  { symbol: 'RELIANCE', name: 'Reliance Industries Ltd.', currentPrice: 2456.75, volume: 1245000 },
-  { symbol: 'TCS', name: 'Tata Consultancy Services', currentPrice: 3678.50, volume: 892000 },
-  { symbol: 'HDFC', name: 'HDFC Bank Ltd.', currentPrice: 1689.25, volume: 2340000 },
-  { symbol: 'INFY', name: 'Infosys Ltd.', currentPrice: 1534.80, volume: 1567000 },
-  { symbol: 'ICICI', name: 'ICICI Bank Ltd.', currentPrice: 967.45, volume: 1890000 },
-  { symbol: 'BHARTI', name: 'Bharti Airtel Ltd.', currentPrice: 892.30, volume: 945000 },
-  { symbol: 'ITC', name: 'ITC Ltd.', currentPrice: 456.90, volume: 3120000 },
-  { symbol: 'WIPRO', name: 'Wipro Ltd.', currentPrice: 445.60, volume: 1234000 },
-  { symbol: 'AXISBANK', name: 'Axis Bank Ltd.', currentPrice: 1089.75, volume: 1456000 },
-  { symbol: 'MARUTI', name: 'Maruti Suzuki India Ltd.', currentPrice: 9876.50, volume: 234000 },
+  { symbol: 'AAPL', name: 'Apple Inc.', currentPrice: 0, volume: 0 },
+  { symbol: 'MSFT', name: 'Microsoft Corporation', currentPrice: 0, volume: 0 },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', currentPrice: 0, volume: 0 },
+  { symbol: 'AMZN', name: 'Amazon.com Inc.', currentPrice: 0, volume: 0 },
+  { symbol: 'TSLA', name: 'Tesla Inc.', currentPrice: 0, volume: 0 },
+  { symbol: 'META', name: 'Meta Platforms Inc.', currentPrice: 0, volume: 0 },
+  { symbol: 'NVDA', name: 'NVIDIA Corporation', currentPrice: 0, volume: 0 },
+  { symbol: 'NFLX', name: 'Netflix Inc.', currentPrice: 0, volume: 0 },
+  { symbol: 'AMD', name: 'Advanced Micro Devices', currentPrice: 0, volume: 0 },
+  { symbol: 'INTC', name: 'Intel Corporation', currentPrice: 0, volume: 0 },
 ];
 
 export const INITIAL_BALANCE = 100000;
