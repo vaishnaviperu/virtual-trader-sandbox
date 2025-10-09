@@ -1,12 +1,63 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Header } from '@/components/Header';
+import { PortfolioStats } from '@/components/PortfolioStats';
+import { StockList } from '@/components/StockList';
+import { HoldingsTable } from '@/components/HoldingsTable';
+import { TransactionsHistory } from '@/components/TransactionsHistory';
+import { useTradingData } from '@/hooks/useTradingData';
+import { PackageIcon, TrendingUpIcon, HistoryIcon } from 'lucide-react';
 
 const Index = () => {
+  const { stocks, portfolio, buyStock, sellStock, resetPortfolio } = useTradingData();
+
+  const holdingsMap = portfolio.holdings.reduce((acc, holding) => {
+    acc[holding.symbol] = holding.quantity;
+    return acc;
+  }, {} as { [key: string]: number });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Header onReset={resetPortfolio} />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <PortfolioStats portfolio={portfolio} />
+        </div>
+
+        <Tabs defaultValue="market" className="space-y-6">
+          <TabsList className="bg-card border border-border">
+            <TabsTrigger value="market" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TrendingUpIcon className="h-4 w-4" />
+              Market
+            </TabsTrigger>
+            <TabsTrigger value="holdings" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <PackageIcon className="h-4 w-4" />
+              Holdings
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <HistoryIcon className="h-4 w-4" />
+              History
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="market" className="space-y-6">
+            <StockList
+              stocks={stocks}
+              onBuy={buyStock}
+              onSell={sellStock}
+              holdings={holdingsMap}
+            />
+          </TabsContent>
+
+          <TabsContent value="holdings">
+            <HoldingsTable holdings={portfolio.holdings} />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <TransactionsHistory transactions={portfolio.transactions} />
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
