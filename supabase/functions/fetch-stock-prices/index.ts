@@ -12,10 +12,10 @@ serve(async (req) => {
 
   try {
     const { symbols } = await req.json();
-    const apiKey = Deno.env.get('FINNHUB_API_KEY');
+    const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
 
     if (!apiKey) {
-      throw new Error('FINNHUB_API_KEY not configured');
+      throw new Error('ALPHA_VANTAGE_API_KEY not configured');
     }
 
     console.log('Fetching prices for symbols:', symbols);
@@ -23,7 +23,7 @@ serve(async (req) => {
     // Fetch prices for all symbols in parallel
     const pricePromises = symbols.map(async (symbol: string) => {
       const response = await fetch(
-        `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`
+        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
       );
       
       if (!response.ok) {
@@ -32,17 +32,28 @@ serve(async (req) => {
       }
 
       const data = await response.json();
+      const quote = data['Global Quote'];
+      
+      if (!quote || Object.keys(quote).length === 0) {
+        console.error(`No data for ${symbol}`);
+        return { symbol, error: true };
+      }
+      
+      const currentPrice = parseFloat(quote['05. price']);
+      const previousClose = parseFloat(quote['08. previous close']);
+      const change = parseFloat(quote['09. change']);
+      const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
       
       return {
         symbol,
-        currentPrice: data.c, // Current price
-        previousClose: data.pc, // Previous close
-        change: data.d, // Change
-        changePercent: data.dp, // Change percent
-        high: data.h, // High price of the day
-        low: data.l, // Low price of the day
-        open: data.o, // Open price of the day
-        timestamp: data.t, // Timestamp
+        currentPrice,
+        previousClose,
+        change,
+        changePercent,
+        high: parseFloat(quote['03. high']),
+        low: parseFloat(quote['04. low']),
+        open: parseFloat(quote['02. open']),
+        timestamp: Date.now() / 1000,
       };
     });
 
