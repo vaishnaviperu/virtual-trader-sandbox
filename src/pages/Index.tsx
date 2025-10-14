@@ -1,14 +1,33 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/Header';
 import { PortfolioStats } from '@/components/PortfolioStats';
 import { StockList } from '@/components/StockList';
 import { HoldingsTable } from '@/components/HoldingsTable';
 import { TransactionsHistory } from '@/components/TransactionsHistory';
-import { useTradingData } from '@/hooks/useTradingData';
+import { useDbTradingData } from '@/hooks/useDbTradingData';
+import { useAuth } from '@/contexts/AuthContext';
 import { PackageIcon, TrendingUpIcon, HistoryIcon } from 'lucide-react';
 
 const Index = () => {
-  const { stocks, portfolio, buyStock, sellStock, resetPortfolio } = useTradingData();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { stocks, portfolio, buyStock, sellStock, resetPortfolio, loading } = useDbTradingData();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   const holdingsMap = portfolio.holdings.reduce((acc, holding) => {
     acc[holding.symbol] = holding.quantity;

@@ -7,8 +7,8 @@ import { TradeDialog } from './TradeDialog';
 
 interface StockListProps {
   stocks: Stock[];
-  onBuy: (symbol: string, quantity: number) => boolean;
-  onSell: (symbol: string, quantity: number) => boolean;
+  onBuy: (symbol: string, quantity: number) => Promise<boolean>;
+  onSell: (symbol: string, quantity: number) => Promise<boolean>;
   holdings: { [key: string]: number };
 }
 

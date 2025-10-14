@@ -16,7 +16,7 @@ interface TradeDialogProps {
   type: 'BUY' | 'SELL';
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (symbol: string, quantity: number) => boolean;
+  onConfirm: (symbol: string, quantity: number) => Promise<boolean>;
   maxQuantity?: number;
 }
 
@@ -25,8 +25,8 @@ export const TradeDialog = ({ stock, type, isOpen, onClose, onConfirm, maxQuanti
 
   const total = stock.currentPrice * quantity;
 
-  const handleConfirm = () => {
-    const success = onConfirm(stock.symbol, quantity);
+  const handleConfirm = async () => {
+    const success = await onConfirm(stock.symbol, quantity);
     if (success) {
       setQuantity(1);
       onClose();
