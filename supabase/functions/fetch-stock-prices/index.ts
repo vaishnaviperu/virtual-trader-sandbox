@@ -20,67 +20,58 @@ serve(async (req) => {
 
     console.log('Fetching prices for symbols:', symbols);
 
-    // Fetch prices for all symbols in parallel
-    const pricePromises = symbols.map(async (symbol: string) => {
-      try {
-        // Fetch daily time series for historical data
-        const timeSeriesResponse = await fetch(
-          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}`
-        );
-        
-        if (!timeSeriesResponse.ok) {
-          console.error(`Error fetching time series for ${symbol}:`, timeSeriesResponse.statusText);
-          return { symbol, error: true };
-        }
+    // Demo data for BSE stocks with realistic Indian stock prices
+    const demoStockData: Record<string, { base: number; volatility: number }> = {
+      'RELIANCE.BSE': { base: 2450, volatility: 50 },
+      'TCS.BSE': { base: 3650, volatility: 80 },
+      'HDFCBANK.BSE': { base: 1680, volatility: 40 },
+      'INFY.BSE': { base: 1520, volatility: 35 },
+      'HINDUNILVR.BSE': { base: 2380, volatility: 45 },
+      'ICICIBANK.BSE': { base: 1150, volatility: 30 },
+      'BHARTIARTL.BSE': { base: 1620, volatility: 35 },
+      'ITC.BSE': { base: 465, volatility: 12 },
+      'SBIN.BSE': { base: 820, volatility: 20 },
+      'LT.BSE': { base: 3580, volatility: 75 }
+    };
 
-        const timeSeriesData = await timeSeriesResponse.json();
-        const timeSeries = timeSeriesData['Time Series (Daily)'];
-        
-        if (!timeSeries || Object.keys(timeSeries).length === 0) {
-          console.error(`No time series data for ${symbol}`);
-          return { symbol, error: true };
-        }
-
-        // Get the dates in order
-        const dates = Object.keys(timeSeries).sort().reverse();
-        const today = dates[0];
-        const yesterday = dates[1];
-        
-        const todayData = timeSeries[today];
-        const yesterdayData = timeSeries[yesterday];
-        
-        const currentPrice = parseFloat(todayData['4. close']);
-        const previousClose = parseFloat(yesterdayData['4. close']);
-        const yesterdayPrice = previousClose;
-        const change = currentPrice - previousClose;
-        const changePercent = (change / previousClose) * 100;
-        
-        // Simple prediction: use moving average trend
-        const last5Days = dates.slice(0, 5).map(date => parseFloat(timeSeries[date]['4. close']));
-        const avgPrice = last5Days.reduce((a, b) => a + b, 0) / last5Days.length;
-        const trend = (currentPrice - avgPrice) / avgPrice;
-        const tomorrowPredicted = currentPrice * (1 + trend);
-        
-        return {
-          symbol,
-          currentPrice,
-          previousClose,
-          change,
-          changePercent,
-          yesterdayPrice,
-          tomorrowPredicted,
-          high: parseFloat(todayData['2. high']),
-          low: parseFloat(todayData['3. low']),
-          open: parseFloat(todayData['1. open']),
-          timestamp: Date.now() / 1000,
-        };
-      } catch (error) {
-        console.error(`Error processing ${symbol}:`, error);
+    const prices = symbols.map((symbol: string) => {
+      const stockData = demoStockData[symbol];
+      if (!stockData) {
         return { symbol, error: true };
       }
-    });
 
-    const prices = await Promise.all(pricePromises);
+      // Generate realistic price variations
+      const randomChange = (Math.random() - 0.5) * stockData.volatility;
+      const currentPrice = stockData.base + randomChange;
+      const yesterdayPrice = stockData.base + (Math.random() - 0.5) * stockData.volatility * 0.8;
+      const previousClose = yesterdayPrice;
+      
+      // Calculate today's change
+      const change = currentPrice - previousClose;
+      const changePercent = (change / previousClose) * 100;
+      
+      // Simple prediction using trend
+      const last5Prices = Array.from({ length: 5 }, (_, i) => 
+        stockData.base + (Math.random() - 0.5) * stockData.volatility * (1 - i * 0.1)
+      );
+      const avgPrice = last5Prices.reduce((a, b) => a + b, 0) / last5Prices.length;
+      const trend = (currentPrice - avgPrice) / avgPrice;
+      const tomorrowPredicted = currentPrice * (1 + trend * 0.7);
+      
+      return {
+        symbol,
+        currentPrice: Math.round(currentPrice * 100) / 100,
+        previousClose: Math.round(previousClose * 100) / 100,
+        yesterdayPrice: Math.round(yesterdayPrice * 100) / 100,
+        tomorrowPredicted: Math.round(tomorrowPredicted * 100) / 100,
+        change: Math.round(change * 100) / 100,
+        changePercent: Math.round(changePercent * 100) / 100,
+        high: Math.round((currentPrice + Math.abs(randomChange) * 0.5) * 100) / 100,
+        low: Math.round((currentPrice - Math.abs(randomChange) * 0.5) * 100) / 100,
+        open: Math.round(previousClose * 100) / 100,
+        timestamp: Date.now() / 1000,
+      };
+    });
     console.log('Fetched prices:', prices);
 
     return new Response(
