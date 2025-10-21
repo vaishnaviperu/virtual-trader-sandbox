@@ -33,33 +33,27 @@ export const StockList = ({ stocks, onBuy, onSell, holdings }: StockListProps) =
           {stocks.map((stock) => {
             const isPositive = stock.change >= 0;
             const hasHolding = holdings[stock.symbol] > 0;
+            const tomorrowChange = stock.tomorrowPredicted && stock.currentPrice 
+              ? ((stock.tomorrowPredicted - stock.currentPrice) / stock.currentPrice) * 100 
+              : 0;
+            const tomorrowPositive = tomorrowChange >= 0;
             
             return (
               <div
                 key={stock.symbol}
-                className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                className="p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{stock.symbol}</h3>
-                    {hasHolding && (
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                        Holding
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{stock.name}</p>
-                </div>
-
-                <div className="flex items-center gap-6">
-                  <div className="text-right">
-                    <p className="font-semibold text-foreground">
-                      ₹{stock.currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-success' : 'text-destructive'}`}>
-                      {isPositive ? <ArrowUpIcon className="h-3 w-3" /> : <ArrowDownIcon className="h-3 w-3" />}
-                      <span>{isPositive ? '+' : ''}{stock.changePercent.toFixed(2)}%</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground">{stock.symbol}</h3>
+                      {hasHolding && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                          Holding
+                        </span>
+                      )}
                     </div>
+                    <p className="text-sm text-muted-foreground">{stock.name}</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -79,6 +73,37 @@ export const StockList = ({ stocks, onBuy, onSell, holdings }: StockListProps) =
                         Sell
                       </Button>
                     )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="text-center p-2 rounded bg-muted/30">
+                    <p className="text-xs text-muted-foreground mb-1">Yesterday</p>
+                    <p className="font-medium text-foreground">
+                      ₹{(stock.yesterdayPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  
+                  <div className="text-center p-2 rounded bg-primary/10">
+                    <p className="text-xs text-muted-foreground mb-1">Today</p>
+                    <p className="font-semibold text-foreground">
+                      ₹{stock.currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <div className={`flex items-center justify-center gap-1 text-xs ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                      {isPositive ? <ArrowUpIcon className="h-3 w-3" /> : <ArrowDownIcon className="h-3 w-3" />}
+                      <span>{isPositive ? '+' : ''}{stock.changePercent.toFixed(2)}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center p-2 rounded bg-muted/30">
+                    <p className="text-xs text-muted-foreground mb-1">Predicted Tomorrow</p>
+                    <p className="font-medium text-foreground">
+                      ₹{(stock.tomorrowPredicted || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <div className={`flex items-center justify-center gap-1 text-xs ${tomorrowPositive ? 'text-success' : 'text-destructive'}`}>
+                      {tomorrowPositive ? <ArrowUpIcon className="h-3 w-3" /> : <ArrowDownIcon className="h-3 w-3" />}
+                      <span>{tomorrowPositive ? '+' : ''}{tomorrowChange.toFixed(2)}%</span>
+                    </div>
                   </div>
                 </div>
               </div>

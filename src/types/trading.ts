@@ -6,6 +6,8 @@ export interface Stock {
   change: number;
   changePercent: number;
   volume: number;
+  yesterdayPrice?: number;
+  tomorrowPredicted?: number;
 }
 
 export interface Holding {

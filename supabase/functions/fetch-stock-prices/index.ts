@@ -22,39 +22,62 @@ serve(async (req) => {
 
     // Fetch prices for all symbols in parallel
     const pricePromises = symbols.map(async (symbol: string) => {
-      const response = await fetch(
-        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
-      );
-      
-      if (!response.ok) {
-        console.error(`Error fetching ${symbol}:`, response.statusText);
-        return { symbol, error: true };
-      }
+      try {
+        // Fetch daily time series for historical data
+        const timeSeriesResponse = await fetch(
+          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}`
+        );
+        
+        if (!timeSeriesResponse.ok) {
+          console.error(`Error fetching time series for ${symbol}:`, timeSeriesResponse.statusText);
+          return { symbol, error: true };
+        }
 
-      const data = await response.json();
-      const quote = data['Global Quote'];
-      
-      if (!quote || Object.keys(quote).length === 0) {
-        console.error(`No data for ${symbol}`);
+        const timeSeriesData = await timeSeriesResponse.json();
+        const timeSeries = timeSeriesData['Time Series (Daily)'];
+        
+        if (!timeSeries || Object.keys(timeSeries).length === 0) {
+          console.error(`No time series data for ${symbol}`);
+          return { symbol, error: true };
+        }
+
+        // Get the dates in order
+        const dates = Object.keys(timeSeries).sort().reverse();
+        const today = dates[0];
+        const yesterday = dates[1];
+        
+        const todayData = timeSeries[today];
+        const yesterdayData = timeSeries[yesterday];
+        
+        const currentPrice = parseFloat(todayData['4. close']);
+        const previousClose = parseFloat(yesterdayData['4. close']);
+        const yesterdayPrice = previousClose;
+        const change = currentPrice - previousClose;
+        const changePercent = (change / previousClose) * 100;
+        
+        // Simple prediction: use moving average trend
+        const last5Days = dates.slice(0, 5).map(date => parseFloat(timeSeries[date]['4. close']));
+        const avgPrice = last5Days.reduce((a, b) => a + b, 0) / last5Days.length;
+        const trend = (currentPrice - avgPrice) / avgPrice;
+        const tomorrowPredicted = currentPrice * (1 + trend);
+        
+        return {
+          symbol,
+          currentPrice,
+          previousClose,
+          change,
+          changePercent,
+          yesterdayPrice,
+          tomorrowPredicted,
+          high: parseFloat(todayData['2. high']),
+          low: parseFloat(todayData['3. low']),
+          open: parseFloat(todayData['1. open']),
+          timestamp: Date.now() / 1000,
+        };
+      } catch (error) {
+        console.error(`Error processing ${symbol}:`, error);
         return { symbol, error: true };
       }
-      
-      const currentPrice = parseFloat(quote['05. price']);
-      const previousClose = parseFloat(quote['08. previous close']);
-      const change = parseFloat(quote['09. change']);
-      const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
-      
-      return {
-        symbol,
-        currentPrice,
-        previousClose,
-        change,
-        changePercent,
-        high: parseFloat(quote['03. high']),
-        low: parseFloat(quote['04. low']),
-        open: parseFloat(quote['02. open']),
-        timestamp: Date.now() / 1000,
-      };
     });
 
     const prices = await Promise.all(pricePromises);

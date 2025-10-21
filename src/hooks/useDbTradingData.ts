@@ -60,6 +60,8 @@ export function useDbTradingData() {
               previousPrice: priceData.previousClose,
               change: priceData.change,
               changePercent: priceData.changePercent,
+              yesterdayPrice: priceData.yesterdayPrice,
+              tomorrowPredicted: priceData.tomorrowPredicted,
               volume: 1000000,
             };
           }
@@ -69,6 +71,8 @@ export function useDbTradingData() {
             previousPrice: 0,
             change: 0,
             changePercent: 0,
+            yesterdayPrice: 0,
+            tomorrowPredicted: 0,
           };
         });
         setStocks(updatedStocks);
