@@ -20,58 +20,90 @@ serve(async (req) => {
 
     console.log('Fetching prices for symbols:', symbols);
 
-    // Demo data for BSE stocks with realistic Indian stock prices
-    const demoStockData: Record<string, { base: number; volatility: number }> = {
-      'RELIANCE.BSE': { base: 2450, volatility: 50 },
-      'TCS.BSE': { base: 3650, volatility: 80 },
-      'HDFCBANK.BSE': { base: 1680, volatility: 40 },
-      'INFY.BSE': { base: 1520, volatility: 35 },
-      'HINDUNILVR.BSE': { base: 2380, volatility: 45 },
-      'ICICIBANK.BSE': { base: 1150, volatility: 30 },
-      'BHARTIARTL.BSE': { base: 1620, volatility: 35 },
-      'ITC.BSE': { base: 465, volatility: 12 },
-      'SBIN.BSE': { base: 820, volatility: 20 },
-      'LT.BSE': { base: 3580, volatility: 75 }
+    // Map BSE symbols to Alpha Vantage compatible symbols (NSE equivalents)
+    const symbolMap: Record<string, string> = {
+      'RELIANCE.BSE': 'RELIANCE.BSE',
+      'TCS.BSE': 'TCS.BSE',
+      'HDFCBANK.BSE': 'HDFCBANK.BSE',
+      'INFY.BSE': 'INFY.BSE',
+      'HINDUNILVR.BSE': 'HINDUNILVR.BSE',
+      'ICICIBANK.BSE': 'ICICIBANK.BSE',
+      'BHARTIARTL.BSE': 'BHARTIARTL.BSE',
+      'ITC.BSE': 'ITC.BSE',
+      'SBIN.BSE': 'SBIN.BSE',
+      'LT.BSE': 'LT.BSE'
     };
 
-    const prices = symbols.map((symbol: string) => {
-      const stockData = demoStockData[symbol];
-      if (!stockData) {
-        return { symbol, error: true };
-      }
+    const prices = await Promise.all(
+      symbols.map(async (symbol: string) => {
+        try {
+          const mappedSymbol = symbolMap[symbol] || symbol;
+          
+          // Fetch daily time series data from Alpha Vantage
+          const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${mappedSymbol}&apikey=${apiKey}&outputsize=compact`;
+          console.log('Fetching from Alpha Vantage:', url.replace(apiKey, 'API_KEY'));
+          
+          const response = await fetch(url);
+          const data = await response.json();
+          
+          if (data['Error Message'] || data['Note']) {
+            console.error('Alpha Vantage error for', symbol, ':', data);
+            return { symbol, error: true };
+          }
 
-      // Generate realistic price variations
-      const randomChange = (Math.random() - 0.5) * stockData.volatility;
-      const currentPrice = stockData.base + randomChange;
-      const yesterdayPrice = stockData.base + (Math.random() - 0.5) * stockData.volatility * 0.8;
-      const previousClose = yesterdayPrice;
-      
-      // Calculate today's change
-      const change = currentPrice - previousClose;
-      const changePercent = (change / previousClose) * 100;
-      
-      // Simple prediction using trend
-      const last5Prices = Array.from({ length: 5 }, (_, i) => 
-        stockData.base + (Math.random() - 0.5) * stockData.volatility * (1 - i * 0.1)
-      );
-      const avgPrice = last5Prices.reduce((a, b) => a + b, 0) / last5Prices.length;
-      const trend = (currentPrice - avgPrice) / avgPrice;
-      const tomorrowPredicted = currentPrice * (1 + trend * 0.7);
-      
-      return {
-        symbol,
-        currentPrice: Math.round(currentPrice * 100) / 100,
-        previousClose: Math.round(previousClose * 100) / 100,
-        yesterdayPrice: Math.round(yesterdayPrice * 100) / 100,
-        tomorrowPredicted: Math.round(tomorrowPredicted * 100) / 100,
-        change: Math.round(change * 100) / 100,
-        changePercent: Math.round(changePercent * 100) / 100,
-        high: Math.round((currentPrice + Math.abs(randomChange) * 0.5) * 100) / 100,
-        low: Math.round((currentPrice - Math.abs(randomChange) * 0.5) * 100) / 100,
-        open: Math.round(previousClose * 100) / 100,
-        timestamp: Date.now() / 1000,
-      };
-    });
+          const timeSeries = data['Time Series (Daily)'];
+          if (!timeSeries) {
+            console.error('No time series data for', symbol);
+            return { symbol, error: true };
+          }
+
+          // Get the two most recent trading days
+          const dates = Object.keys(timeSeries).sort().reverse();
+          const todayData = timeSeries[dates[0]];
+          const yesterdayData = timeSeries[dates[1]];
+
+          if (!todayData || !yesterdayData) {
+            console.error('Missing data for', symbol);
+            return { symbol, error: true };
+          }
+
+          const currentPrice = parseFloat(todayData['4. close']);
+          const yesterdayPrice = parseFloat(yesterdayData['4. close']);
+          const previousClose = yesterdayPrice;
+          const high = parseFloat(todayData['2. high']);
+          const low = parseFloat(todayData['3. low']);
+          const open = parseFloat(todayData['1. open']);
+          
+          // Calculate today's change
+          const change = currentPrice - previousClose;
+          const changePercent = (change / previousClose) * 100;
+          
+          // Simple prediction using 5-day moving average trend
+          const last5Prices = dates.slice(0, 5).map(date => parseFloat(timeSeries[date]['4. close']));
+          const avgPrice = last5Prices.reduce((a, b) => a + b, 0) / last5Prices.length;
+          const trend = (currentPrice - avgPrice) / avgPrice;
+          const tomorrowPredicted = currentPrice * (1 + trend * 0.7);
+
+          return {
+            symbol,
+            currentPrice: Math.round(currentPrice * 100) / 100,
+            previousClose: Math.round(previousClose * 100) / 100,
+            yesterdayPrice: Math.round(yesterdayPrice * 100) / 100,
+            tomorrowPredicted: Math.round(tomorrowPredicted * 100) / 100,
+            change: Math.round(change * 100) / 100,
+            changePercent: Math.round(changePercent * 100) / 100,
+            high: Math.round(high * 100) / 100,
+            low: Math.round(low * 100) / 100,
+            open: Math.round(open * 100) / 100,
+            timestamp: Date.now() / 1000,
+          };
+        } catch (error) {
+          console.error('Error fetching', symbol, ':', error);
+          return { symbol, error: true };
+        }
+      })
+    );
+    
     console.log('Fetched prices:', prices);
 
     return new Response(
