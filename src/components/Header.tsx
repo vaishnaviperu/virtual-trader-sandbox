@@ -33,7 +33,7 @@ export const Header = ({ onReset, onRefresh }: HeaderProps) => {
               <TrendingUpIcon className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">TradePro</h1>
+              <h1 className="text-2xl font-bold text-foreground">SimStock</h1>
               <p className="text-sm text-muted-foreground">Virtual Trading Platform</p>
             </div>
           </Link>
