@@ -13,7 +13,7 @@ import { PackageIcon, TrendingUpIcon, HistoryIcon } from 'lucide-react';
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { stocks, portfolio, buyStock, sellStock, resetPortfolio, loading } = useDbTradingData();
+  const { stocks, portfolio, buyStock, sellStock, resetPortfolio, refreshPrices, loading } = useDbTradingData();
 
   useEffect(() => {
     if (!user) {
@@ -36,7 +36,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onReset={resetPortfolio} />
+      <Header onReset={resetPortfolio} onRefresh={refreshPrices} />
       
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">

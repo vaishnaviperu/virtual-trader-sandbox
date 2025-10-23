@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { TrendingUpIcon, RotateCcwIcon, LogOut, Trophy, BarChart3 } from 'lucide-react';
+import { TrendingUpIcon, RotateCcwIcon, LogOut, Trophy, BarChart3, RefreshCw } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeToggle } from './ThemeToggle';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,9 +17,10 @@ import {
 
 interface HeaderProps {
   onReset?: () => void;
+  onRefresh?: () => void;
 }
 
-export const Header = ({ onReset }: HeaderProps) => {
+export const Header = ({ onReset, onRefresh }: HeaderProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -37,8 +39,20 @@ export const Header = ({ onReset }: HeaderProps) => {
           </Link>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             {user ? (
               <>
+                {onRefresh && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onRefresh}
+                    className="gap-2"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Refresh
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"

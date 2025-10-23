@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Stock } from '@/types/trading';
-import { ArrowUpIcon, ArrowDownIcon, TrendingUpIcon } from 'lucide-react';
+import { ArrowUpIcon, ArrowDownIcon, TrendingUpIcon, Info } from 'lucide-react';
 import { TradeDialog } from './TradeDialog';
+import { StockChart } from './StockChart';
+import { CompanyInfoDialog } from './CompanyInfoDialog';
 
 interface StockListProps {
   stocks: Stock[];
@@ -15,6 +17,7 @@ interface StockListProps {
 export const StockList = ({ stocks, onBuy, onSell, holdings }: StockListProps) => {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
+  const [infoStock, setInfoStock] = useState<Stock | null>(null);
 
   const handleTrade = (type: 'BUY' | 'SELL', stock: Stock) => {
     setTradeType(type);
@@ -52,6 +55,14 @@ export const StockList = ({ stocks, onBuy, onSell, holdings }: StockListProps) =
                           Holding
                         </span>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setInfoStock(stock)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Button>
                     </div>
                     <p className="text-sm text-muted-foreground">{stock.name}</p>
                   </div>
@@ -76,7 +87,7 @@ export const StockList = ({ stocks, onBuy, onSell, holdings }: StockListProps) =
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-3 gap-4 text-sm mb-3">
                   <div className="text-center p-2 rounded bg-muted/30">
                     <p className="text-xs text-muted-foreground mb-1">Yesterday</p>
                     <p className="font-medium text-foreground">
@@ -106,6 +117,13 @@ export const StockList = ({ stocks, onBuy, onSell, holdings }: StockListProps) =
                     </div>
                   </div>
                 </div>
+
+                <StockChart
+                  symbol={stock.symbol}
+                  yesterdayPrice={stock.yesterdayPrice || 0}
+                  currentPrice={stock.currentPrice}
+                  tomorrowPredicted={stock.tomorrowPredicted || 0}
+                />
               </div>
             );
           })}
@@ -122,6 +140,12 @@ export const StockList = ({ stocks, onBuy, onSell, holdings }: StockListProps) =
           maxQuantity={tradeType === 'SELL' ? holdings[selectedStock.symbol] : undefined}
         />
       )}
+
+      <CompanyInfoDialog
+        stock={infoStock}
+        isOpen={!!infoStock}
+        onClose={() => setInfoStock(null)}
+      />
     </>
   );
 };

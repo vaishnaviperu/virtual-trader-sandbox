@@ -43,9 +43,9 @@ export const PortfolioStats = ({ portfolio }: PortfolioStatsProps) => {
       <Card className="p-6 border-border bg-card">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Invested</p>
+            <p className="text-sm text-muted-foreground mb-1">Current Value</p>
             <p className="text-2xl font-bold text-foreground">
-              ₹{portfolio.totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              ₹{portfolio.currentValue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
             </p>
           </div>
           <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">

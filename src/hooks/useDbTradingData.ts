@@ -356,6 +356,7 @@ export function useDbTradingData() {
     buyStock,
     sellStock,
     resetPortfolio,
+    refreshPrices: fetchStockPrices,
     loading,
   };
 }
