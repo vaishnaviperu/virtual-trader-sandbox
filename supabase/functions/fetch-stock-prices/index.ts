@@ -31,7 +31,19 @@ serve(async (req) => {
       'BHARTIARTL.BSE': 'BHARTIARTL.BSE',
       'ITC.BSE': 'ITC.BSE',
       'SBIN.BSE': 'SBIN.BSE',
-      'LT.BSE': 'LT.BSE'
+      'LT.BSE': 'LT.BSE',
+      'KOTAKBANK.BSE': 'KOTAKBANK.BSE',
+      'AXISBANK.BSE': 'AXISBANK.BSE',
+      'BAJFINANCE.BSE': 'BAJFINANCE.BSE',
+      'MARUTI.BSE': 'MARUTI.BSE',
+      'HCLTECH.BSE': 'HCLTECH.BSE',
+      'WIPRO.BSE': 'WIPRO.BSE',
+      'ASIANPAINT.BSE': 'ASIANPAINT.BSE',
+      'TITAN.BSE': 'TITAN.BSE',
+      'SUNPHARMA.BSE': 'SUNPHARMA.BSE',
+      'ULTRACEMCO.BSE': 'ULTRACEMCO.BSE',
+      'NESTLEIND.BSE': 'NESTLEIND.BSE',
+      'POWERGRID.BSE': 'POWERGRID.BSE'
     };
 
     const prices = await Promise.all(

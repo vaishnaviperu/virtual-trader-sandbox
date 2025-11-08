@@ -63,6 +63,66 @@ const companyInfo: Record<string, { sector: string; description: string; founded
     sector: 'Engineering & Construction',
     description: 'Larsen & Toubro is an Indian multinational engaged in EPC projects, hi-tech manufacturing and services. It operates in over 50 countries.',
     founded: '1938'
+  },
+  'KOTAKBANK.BSE': {
+    sector: 'Banking',
+    description: 'Kotak Mahindra Bank is an Indian private sector bank that provides a wide range of banking and financial services. It is the fourth largest private sector bank in India by market capitalization.',
+    founded: '1985'
+  },
+  'AXISBANK.BSE': {
+    sector: 'Banking',
+    description: 'Axis Bank is the third largest private sector bank in India. It offers a comprehensive suite of financial products and services to large and mid-size corporates, SME, and retail businesses.',
+    founded: '1993'
+  },
+  'BAJFINANCE.BSE': {
+    sector: 'Financial Services',
+    description: 'Bajaj Finance is a lending and investment company providing consumer finance, SME finance, commercial lending, and wealth management services across India.',
+    founded: '2007'
+  },
+  'MARUTI.BSE': {
+    sector: 'Automotive',
+    description: 'Maruti Suzuki India Limited is an automobile manufacturer in India. It is a subsidiary of Suzuki Motor Corporation, Japan and the market leader in India with over 50% market share.',
+    founded: '1981'
+  },
+  'HCLTECH.BSE': {
+    sector: 'IT Services',
+    description: 'HCL Technologies is an Indian multinational IT services and consulting company. It provides services including software development, infrastructure management, and engineering services.',
+    founded: '1976'
+  },
+  'WIPRO.BSE': {
+    sector: 'IT Services',
+    description: 'Wipro Limited is an Indian multinational corporation that provides IT services, consulting and business process services. It is one of the leading IT services companies globally.',
+    founded: '1945'
+  },
+  'ASIANPAINT.BSE': {
+    sector: 'Paints & Coatings',
+    description: 'Asian Paints is an Indian multinational paint company. It is the largest paint company in India and the third largest in Asia, with operations in 15 countries.',
+    founded: '1942'
+  },
+  'TITAN.BSE': {
+    sector: 'Retail & Consumer Goods',
+    description: 'Titan Company is an Indian luxury goods company that manufactures watches, jewellery, and eyewear. It is a joint venture of the Tata Group and Tamil Nadu Industrial Development Corporation.',
+    founded: '1984'
+  },
+  'SUNPHARMA.BSE': {
+    sector: 'Pharmaceuticals',
+    description: 'Sun Pharmaceutical Industries is an Indian multinational pharmaceutical company. It is the largest pharmaceutical company in India and the world\'s fourth largest specialty generic pharmaceutical company.',
+    founded: '1983'
+  },
+  'ULTRACEMCO.BSE': {
+    sector: 'Cement',
+    description: 'UltraTech Cement is an Indian cement company and a subsidiary of the Aditya Birla Group. It is the largest manufacturer of grey cement, Ready Mix Concrete (RMC) and white cement in India.',
+    founded: '1983'
+  },
+  'NESTLEIND.BSE': {
+    sector: 'FMCG',
+    description: 'Nestle India is the Indian subsidiary of the Swiss multinational food and beverage company Nestlé. It manufactures and markets food products including coffee, milk products, and infant nutrition.',
+    founded: '1912'
+  },
+  'POWERGRID.BSE': {
+    sector: 'Power & Utilities',
+    description: 'Power Grid Corporation of India is an Indian state-owned electric utilities company. It transmits about 50% of the total power generated in India on its transmission network.',
+    founded: '1989'
   }
 };
 
