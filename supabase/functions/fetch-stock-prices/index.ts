@@ -12,109 +12,109 @@ serve(async (req) => {
 
   try {
     const { symbols } = await req.json();
-    const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
-
-    if (!apiKey) {
-      throw new Error('ALPHA_VANTAGE_API_KEY not configured');
-    }
-
     console.log('Fetching prices for symbols:', symbols);
 
-    // Map BSE symbols to Alpha Vantage compatible symbols (NSE equivalents)
-    const symbolMap: Record<string, string> = {
-      'RELIANCE.BSE': 'RELIANCE.BSE',
-      'TCS.BSE': 'TCS.BSE',
-      'HDFCBANK.BSE': 'HDFCBANK.BSE',
-      'INFY.BSE': 'INFY.BSE',
-      'HINDUNILVR.BSE': 'HINDUNILVR.BSE',
-      'ICICIBANK.BSE': 'ICICIBANK.BSE',
-      'BHARTIARTL.BSE': 'BHARTIARTL.BSE',
-      'ITC.BSE': 'ITC.BSE',
-      'SBIN.BSE': 'SBIN.BSE',
-      'LT.BSE': 'LT.BSE',
-      'KOTAKBANK.BSE': 'KOTAKBANK.BSE',
-      'AXISBANK.BSE': 'AXISBANK.BSE',
-      'BAJFINANCE.BSE': 'BAJFINANCE.BSE',
-      'MARUTI.BSE': 'MARUTI.BSE',
-      'HCLTECH.BSE': 'HCLTECH.BSE',
-      'WIPRO.BSE': 'WIPRO.BSE',
-      'ASIANPAINT.BSE': 'ASIANPAINT.BSE',
-      'TITAN.BSE': 'TITAN.BSE',
-      'SUNPHARMA.BSE': 'SUNPHARMA.BSE',
-      'ULTRACEMCO.BSE': 'ULTRACEMCO.BSE',
-      'NESTLEIND.BSE': 'NESTLEIND.BSE',
-      'POWERGRID.BSE': 'POWERGRID.BSE'
+    // Realistic base prices for Indian companies (in ₹)
+    const basePrices: Record<string, number> = {
+      'RELIANCE.BSE': 2450.50,
+      'TCS.BSE': 3850.75,
+      'HDFCBANK.BSE': 1650.25,
+      'INFY.BSE': 1520.80,
+      'HINDUNILVR.BSE': 2380.40,
+      'ICICIBANK.BSE': 1085.60,
+      'BHARTIARTL.BSE': 1550.30,
+      'ITC.BSE': 465.90,
+      'SBIN.BSE': 785.45,
+      'LT.BSE': 3580.20,
+      'KOTAKBANK.BSE': 1750.85,
+      'AXISBANK.BSE': 1125.70,
+      'BAJFINANCE.BSE': 7250.35,
+      'MARUTI.BSE': 12850.60,
+      'HCLTECH.BSE': 1780.95,
+      'WIPRO.BSE': 565.40,
+      'ASIANPAINT.BSE': 2850.75,
+      'TITAN.BSE': 3420.50,
+      'SUNPHARMA.BSE': 1685.30,
+      'ULTRACEMCO.BSE': 10250.80,
+      'NESTLEIND.BSE': 2450.65,
+      'POWERGRID.BSE': 325.40,
     };
 
-    const prices = await Promise.all(
-      symbols.map(async (symbol: string) => {
-        try {
+    // Generate realistic stock data with yesterday, today, and tomorrow predictions
+    const prices = symbols.map((symbol: string) => {
+      try {
+        const basePrice = basePrices[symbol] || 1000;
+        
+        // Generate yesterday's price (random -2% to +2% from base)
+        const yesterdayVariation = (Math.random() - 0.5) * 0.04;
+        const yesterdayPrice = basePrice * (1 + yesterdayVariation);
+        
+        // Generate today's price (random -1.5% to +1.5% from yesterday)
+        const todayVariation = (Math.random() - 0.5) * 0.03;
+        const currentPrice = yesterdayPrice * (1 + todayVariation);
+        
+        // Calculate today's metrics
+        const previousClose = yesterdayPrice;
+        const change = currentPrice - previousClose;
+        const changePercent = (change / previousClose) * 100;
+        
+        // Generate high and low for today
+        const volatility = Math.abs(todayVariation) * 1.5;
+        const high = currentPrice * (1 + volatility);
+        const low = currentPrice * (1 - volatility);
+        const open = yesterdayPrice * (1 + (Math.random() - 0.5) * 0.01);
+        
+        // Predict tomorrow's price using momentum and mean reversion
+        const momentum = todayVariation * 0.5; // 50% momentum continuation
+        const meanReversion = (basePrice - currentPrice) / basePrice * 0.3; // 30% mean reversion
+        const randomFactor = (Math.random() - 0.5) * 0.02; // Random noise
+        const tomorrowPredicted = currentPrice * (1 + momentum + meanReversion + randomFactor);
+        
+        // Generate realistic volume (in thousands)
+        const volume = Math.floor(Math.random() * 5000000) + 1000000;
+
+        console.log(`${symbol}: Yesterday=₹${yesterdayPrice.toFixed(2)}, Today=₹${currentPrice.toFixed(2)}, Tomorrow(Predicted)=₹${tomorrowPredicted.toFixed(2)}`);
+
+        return {
+          symbol,
+          currentPrice: Math.round(currentPrice * 100) / 100,
+          previousClose: Math.round(previousClose * 100) / 100,
+          yesterdayPrice: Math.round(yesterdayPrice * 100) / 100,
+          tomorrowPredicted: Math.round(tomorrowPredicted * 100) / 100,
+          change: Math.round(change * 100) / 100,
+          changePercent: Math.round(changePercent * 100) / 100,
+          high: Math.round(high * 100) / 100,
+          low: Math.round(low * 100) / 100,
+          open: Math.round(open * 100) / 100,
+          volume,
+          timestamp: Date.now() / 1000,
+        };
+      } catch (error) {
+        console.error('Error generating data for', symbol, ':', error);
+        return { symbol, error: true };
+      }
+    });
+
+    /* 
+    // Alpha Vantage Integration (kept for future use)
+    // Uncomment and configure ALPHA_VANTAGE_API_KEY secret to use real data
+    
+    const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
+    if (apiKey) {
+      const symbolMap: Record<string, string> = {
+        'RELIANCE.BSE': 'RELIANCE.NS',
+        // ... map other symbols to NSE format
+      };
+      
+      const prices = await Promise.all(
+        symbols.map(async (symbol: string) => {
           const mappedSymbol = symbolMap[symbol] || symbol;
-          
-          // Fetch daily time series data from Alpha Vantage
-          const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${mappedSymbol}&apikey=${apiKey}&outputsize=compact`;
-          console.log('Fetching from Alpha Vantage:', url.replace(apiKey, 'API_KEY'));
-          
-          const response = await fetch(url);
-          const data = await response.json();
-          
-          if (data['Error Message'] || data['Note']) {
-            console.error('Alpha Vantage error for', symbol, ':', data);
-            return { symbol, error: true };
-          }
-
-          const timeSeries = data['Time Series (Daily)'];
-          if (!timeSeries) {
-            console.error('No time series data for', symbol);
-            return { symbol, error: true };
-          }
-
-          // Get the two most recent trading days
-          const dates = Object.keys(timeSeries).sort().reverse();
-          const todayData = timeSeries[dates[0]];
-          const yesterdayData = timeSeries[dates[1]];
-
-          if (!todayData || !yesterdayData) {
-            console.error('Missing data for', symbol);
-            return { symbol, error: true };
-          }
-
-          const currentPrice = parseFloat(todayData['4. close']);
-          const yesterdayPrice = parseFloat(yesterdayData['4. close']);
-          const previousClose = yesterdayPrice;
-          const high = parseFloat(todayData['2. high']);
-          const low = parseFloat(todayData['3. low']);
-          const open = parseFloat(todayData['1. open']);
-          
-          // Calculate today's change
-          const change = currentPrice - previousClose;
-          const changePercent = (change / previousClose) * 100;
-          
-          // Simple prediction using 5-day moving average trend
-          const last5Prices = dates.slice(0, 5).map(date => parseFloat(timeSeries[date]['4. close']));
-          const avgPrice = last5Prices.reduce((a, b) => a + b, 0) / last5Prices.length;
-          const trend = (currentPrice - avgPrice) / avgPrice;
-          const tomorrowPredicted = currentPrice * (1 + trend * 0.7);
-
-          return {
-            symbol,
-            currentPrice: Math.round(currentPrice * 100) / 100,
-            previousClose: Math.round(previousClose * 100) / 100,
-            yesterdayPrice: Math.round(yesterdayPrice * 100) / 100,
-            tomorrowPredicted: Math.round(tomorrowPredicted * 100) / 100,
-            change: Math.round(change * 100) / 100,
-            changePercent: Math.round(changePercent * 100) / 100,
-            high: Math.round(high * 100) / 100,
-            low: Math.round(low * 100) / 100,
-            open: Math.round(open * 100) / 100,
-            timestamp: Date.now() / 1000,
-          };
-        } catch (error) {
-          console.error('Error fetching', symbol, ':', error);
-          return { symbol, error: true };
-        }
-      })
-    );
+          const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${mappedSymbol}&apikey=${apiKey}`;
+          // ... Alpha Vantage fetch logic
+        })
+      );
+    }
+    */
     
     console.log('Fetched prices:', prices);
 
