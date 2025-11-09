@@ -66,7 +66,7 @@ export default function Auth() {
         <CardHeader className="space-y-1 flex flex-col items-center">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold">TradePro</h1>
+            <h1 className="text-2xl font-bold">SimStock</h1>
           </div>
           <CardTitle className="text-2xl">Welcome</CardTitle>
           <CardDescription>
